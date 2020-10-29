@@ -5,6 +5,7 @@ import com.java.myrotiuk.service.TourService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 
@@ -32,7 +33,8 @@ public class LoadDataHelper {
     /**
      * Initialize all the known tour packages
      */
-    private void createTourPackages(){
+    @Transactional
+    private void createTourPackages() {
         tourPackageService.createTourPackage("BC", "Backpack Cal");
         tourPackageService.createTourPackage("CC", "California Calm");
         tourPackageService.createTourPackage("CH", "California Hot springs");
@@ -47,18 +49,13 @@ public class LoadDataHelper {
     /**
      * Create tour entities from an external file
      */
+    @Transactional
     private void createTours(String fileToImport) throws IOException {
         TourFromFileHelper.read(fileToImport).forEach(importedTour ->
                 tourService.createTour(importedTour.getTitle(),
-                        importedTour.getDescription(),
-                        importedTour.getBlurb(),
-                        importedTour.getPrice(),
-                        importedTour.getLength(),
-                        importedTour.getBullets(),
-                        importedTour.getKeywords(),
-                        importedTour.getPackageType(),
-                        importedTour.getDifficulty(),
-                        importedTour.getRegion()));
+                        importedTour.getTourPackageName(),
+                        importedTour.getDetails()
+                ));
     }
 
 }

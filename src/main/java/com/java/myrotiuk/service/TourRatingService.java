@@ -1,7 +1,6 @@
 package com.java.myrotiuk.service;
 
 import com.java.myrotiuk.dto.RatingDto;
-import com.java.myrotiuk.entity.Tour;
 import com.java.myrotiuk.entity.TourRating;
 import com.java.myrotiuk.repository.TourRatingRepository;
 import com.java.myrotiuk.repository.TourRepository;
@@ -12,7 +11,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.EntityNotFoundException;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -26,19 +24,19 @@ public class TourRatingService {
     private final TourRepository tourRepository;
 
     @Transactional
-    public RatingDto createTourRating(Long tourId, RatingDto ratingDto) {
-        Tour tour = verifyTour(tourId);
+    public RatingDto createTourRating(String tourId, RatingDto ratingDto) {
+        verifyTour(tourId);
         TourRating tourRating = TourRating.builder()
                 .comment(ratingDto.getComment())
                 .customerId(ratingDto.getCustomerId())
                 .score(ratingDto.getScore())
-                .tour(tour)
+                .tourId(tourId)
                 .build();
         return getRatingDto(tourRatingRepository.save(tourRating));
     }
 
     @Transactional
-    public List<RatingDto> getAllTourRatings(Long tourId) {
+    public List<RatingDto> getAllTourRatings(String tourId) {
         verifyTour(tourId);
         return tourRatingRepository.findByTourId(tourId).stream()
                 .map(this::getRatingDto)
@@ -46,7 +44,7 @@ public class TourRatingService {
     }
 
     @Transactional
-    public Map<String, Double> getAverage(Long tourId) {
+    public Map<String, Double> getAverage(String tourId) {
         verifyTour(tourId);
         return Map.of("avarage", tourRatingRepository.findByTourId(tourId).stream()
                 .mapToInt(TourRating::getScore)
@@ -57,7 +55,7 @@ public class TourRatingService {
 
     //add mappers
     @Transactional
-    public RatingDto updateTourRating(Long tourId, RatingDto ratingDto) {
+    public RatingDto updateTourRating(String tourId, RatingDto ratingDto) {
         TourRating tourRating = verifyTourRating(tourId, ratingDto.getCustomerId());
         tourRating.setComment(ratingDto.getComment());
         tourRating.setScore(ratingDto.getScore());
@@ -66,7 +64,7 @@ public class TourRatingService {
     }
 
     @Transactional
-    public RatingDto updateTourRatingWithPatch(Long tourId, RatingDto ratingDto) {
+    public RatingDto updateTourRatingWithPatch(String tourId, RatingDto ratingDto) {
         TourRating tourRating = verifyTourRating(tourId, ratingDto.getCustomerId());
         if (ratingDto.getComment() != null) {
             tourRating.setComment(ratingDto.getComment());
@@ -78,13 +76,13 @@ public class TourRatingService {
     }
 
     @Transactional
-    public void deleteTourRating(Long tourId, Long customerId) {
+    public void deleteTourRating(String tourId, Long customerId) {
         TourRating tourRating = verifyTourRating(tourId, customerId);
         tourRatingRepository.delete(tourRating);
     }
 
     @Transactional(readOnly = true)
-    public Page<RatingDto> findByTourId(Long tourId, Pageable pageable) {
+    public Page<RatingDto> findByTourId(String tourId, Pageable pageable) {
         Page<TourRating> pageByTourId = tourRatingRepository.findByTourId(tourId, pageable);
 
         return new PageImpl<>(pageByTourId.get()
@@ -93,14 +91,15 @@ public class TourRatingService {
                 pageByTourId.getTotalElements());
     }
 
-    private Tour verifyTour(Long tourId) {
-        return tourRepository.findById(tourId)
-                .orElseThrow(() -> new EntityNotFoundException("There is no tour with id:" + tourId));
+    private void verifyTour(String tourId) {
+        if (!tourRepository.existsById(tourId)) {
+            throw new NoSuchElementException("There is no tour with id:" + tourId);
+        }
     }
 
-    private TourRating verifyTourRating(Long tourId, Long customerId) {
+    private TourRating verifyTourRating(String tourId, Long customerId) {
         return tourRatingRepository.findByTourIdAndCustomerId(tourId, customerId)
-                .orElseThrow(() -> new EntityNotFoundException(String.format("There is no tour rating with tourId: %s and customerId: %d", tourId, customerId)));
+                .orElseThrow(() -> new NoSuchElementException(String.format("There is no tour rating with tourId: %s and customerId: %d", tourId, customerId)));
     }
 
     private RatingDto getRatingDto(TourRating tourRating) {

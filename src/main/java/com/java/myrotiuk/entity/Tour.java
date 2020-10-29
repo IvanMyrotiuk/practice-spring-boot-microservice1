@@ -4,56 +4,33 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.Document;
 
-import javax.persistence.*;
+import java.util.Map;
 
 /**
  * @author Ivan_Myrotiuk
  */
-@Entity
+@Document
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
-@Table(name = "Tour", schema = "")
 public class Tour {
 
     @Id
-    @GeneratedValue
-    private Long id;
+    private String id;
 
-    @Column
+    @Indexed
     private String title;
 
-    @Column(length = 2000)
-    private String description;
+    @Indexed
+    private String tourPackageCode;
+    
+    private String tourPackageName;
 
-    @Column(length = 2000)
-    private String blurb;
-
-    @Column
-    private Double price;
-
-    @Column
-    private String duration;
-
-    @Column(length = 2000)
-    private String bullets;
-
-    @Column
-    private String keywords;
-
-    @ManyToOne
-    @JoinColumn(name = "tour_package_code")
-    private TourPackage tourPackage;
-
-    @Column
-    @Enumerated
-    private Difficulty difficulty;
-
-    @Column
-    @Enumerated
-    private Region region;
-
+    private Map<String, String> details;
 
 }

@@ -19,14 +19,14 @@ import java.util.List;
 public class TourPackageService {
     private final TourPackageRepository tourPackageRepository;
 
-    @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.READ_COMMITTED)
+    @Transactional(propagation = Propagation.MANDATORY, isolation = Isolation.READ_COMMITTED)
     public TourPackage createTourPackage(String code, String name) {
         return tourPackageRepository.findById(code)
                 .orElseGet(() -> tourPackageRepository.save(new TourPackage(code, name)));
     }
 
     @Transactional(readOnly = true)
-    public List<TourPackage> lookup() {
+    public Iterable<TourPackage> lookup() {
         return tourPackageRepository.findAll();
     }
 

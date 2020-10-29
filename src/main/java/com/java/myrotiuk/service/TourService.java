@@ -1,14 +1,15 @@
 package com.java.myrotiuk.service;
 
-import com.java.myrotiuk.entity.Difficulty;
-import com.java.myrotiuk.entity.Region;
 import com.java.myrotiuk.entity.Tour;
 import com.java.myrotiuk.entity.TourPackage;
 import com.java.myrotiuk.repository.TourPackageRepository;
 import com.java.myrotiuk.repository.TourRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Map;
 
 /**
  * @author Ivan_Myrotiuk
@@ -19,25 +20,18 @@ public class TourService {
     private final TourRepository tourRepository;
     private final TourPackageRepository tourPackageRepository;
 
-    @Transactional
-    public Tour createTour(String title, String description, String blurb, Double price,
-                           String duration, String bullets, String keywords, String tourPackageName,
-                           Difficulty difficulty, Region region) {
+    @Transactional(propagation = Propagation.MANDATORY)
+    public Tour createTour(String title, String tourPackageName,
+                           Map<String, String> details) {
 
         TourPackage tourPackage = tourPackageRepository.findByName(tourPackageName)
                 .orElseThrow(() -> new IllegalArgumentException(String.format("There is no such tour package: %s", tourPackageName)));
 
         return tourRepository.save(Tour.builder()
                 .title(title)
-                .description(description)
-                .blurb(blurb)
-                .price(price)
-                .duration(duration)
-                .bullets(bullets)
-                .keywords(keywords)
-                .tourPackage(tourPackage)
-                .difficulty(difficulty)
-                .region(region)
+                .tourPackageName(tourPackage.getName())
+                .tourPackageCode(tourPackage.getCode())
+                .details(details)
                 .build());
     }
 
