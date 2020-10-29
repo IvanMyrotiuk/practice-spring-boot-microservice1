@@ -36,8 +36,9 @@ public interface TourRepository extends PagingAndSortingRepository<Tour, String>
     /**
      * Only return the main fields of a Tour, not details
      * only return id, title, tourPackageCode and tourPackageName fields
+     http://localhost:9090/tours/search/findSummaryByTourPackageCode?code=BC&size=2&page=0
      */
-    @Query(value = "{'tourPackageCode' =: code }",
+    @Query(value = "{'tourPackageCode' : ?0 }",//will not work with =:
             fields = "{ 'id':1, 'title':1, 'tourPackageCode':1, 'tourPackageName':1}")
     Page<Tour> findSummaryByTourPackageCode(@Param("code") String code, Pageable pageable);
 }
