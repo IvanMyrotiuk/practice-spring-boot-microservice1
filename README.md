@@ -1,2 +1,2 @@
 # practice-spring-boot-microservice1
-Made by Ivan Myortiuk
+Made by Ivan Myrotiuk
